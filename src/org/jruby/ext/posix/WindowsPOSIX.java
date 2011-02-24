@@ -131,7 +131,7 @@ final class WindowsPOSIX extends BaseNativePOSIX {
 
     @Override
     public int chown(String filename, int user, int group) {
-        return 0;
+    	return 0;
     }
 
     @Override
@@ -227,9 +227,14 @@ final class WindowsPOSIX extends BaseNativePOSIX {
     }
     
     @Override
+    public int chmod(String filename, int mode) {
+        byte[] wpath = toWPath(filename);
+        return ((WindowsLibC) libc())._wchmod(wpath, GENERIC_ALL);
+    }
+    
+    @Override
     public int lchmod(String filename, int mode) {
-        handler.unimplementedError("lchmod");
-        
+    	handler.unimplementedError("lchmod");
         return -1;
     }
     
@@ -254,7 +259,7 @@ final class WindowsPOSIX extends BaseNativePOSIX {
 
     private static final int INVALID_HANDLE_VALUE = -1;
 
-    private static final int GENERIC_ALL = 0x10000000;
+    public static final int GENERIC_ALL = 0x10000000;
     private static final int GENERIC_READ = 0x80000000;
     private static final int GENERIC_WRITE = 0x40000000;
     private static final int GENERIC_EXECUTE = 0x2000000;
@@ -393,9 +398,12 @@ final class WindowsPOSIX extends BaseNativePOSIX {
 
     @Override
     public int mkdir(String path, int mode) {
-        // TODO: somehow handle the mode
         byte[] widePath = toWPath(path);
-        int res = ((WindowsLibC)libc())._wmkdir(widePath);
+        int res = -1;
+        if (((WindowsLibC)libc())._wmkdir(widePath) == 0) {
+        	res = ((WindowsLibC) libc())._wchmod(widePath, mode);
+        }
+        
         if (res < 0) {
             int error = errno();
             handler.error(mapErrorToErrno(error), path);

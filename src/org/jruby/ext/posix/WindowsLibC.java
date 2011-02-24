@@ -5,10 +5,13 @@ import com.kenai.jaffl.annotations.In;
 import com.kenai.jaffl.annotations.StdCall;
 
 public interface WindowsLibC extends LibC {
+	
     public int _open_osfhandle(int handle, int flags);
 
     public int _wmkdir(@In byte[] path);
 
+    public int _wchmod(@In byte[] path, int pmode);
+    
      @StdCall
     public int GetFileType(int handle);
 
